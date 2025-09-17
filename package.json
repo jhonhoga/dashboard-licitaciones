@@ -1,0 +1,33 @@
+{
+  "name": "dashboard-licitaciones",
+  "version": "1.0.0",
+  "description": "Dashboard interactivo para análisis de proponentes en licitaciones públicas",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "start": "python -m http.server 8080",
+    "build": "echo 'Build completed - static files ready'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "licitaciones",
+    "dashboard",
+    "analisis",
+    "proponentes",
+    "empresas",
+    "mapa-calor",
+    "visualizacion-datos"
+  ],
+  "author": "Dashboard Licitaciones",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/dashboard-licitaciones.git"
+  },
+  "homepage": "https://dashboard-licitaciones.vercel.app",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
