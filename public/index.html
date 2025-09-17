@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Análisis de Licitaciones | Análisis de Proponentes y Empresas</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Dashboard interactivo para analizar licitaciones públicas. Identifica patrones de participación de empresas, visualiza concentraciones geográficas y analiza experiencia empresarial.">
+    <meta name="keywords" content="licitaciones, dashboard, análisis, proponentes, empresas, mapa calor, visualización datos, colombia">
+    <meta name="author" content="Dashboard Licitaciones">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Spanish">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dashboard-licitaciones.vercel.app/">
+    <meta property="og:title" content="Dashboard de Análisis de Licitaciones">
+    <meta property="og:description" content="Herramienta interactiva para analizar licitaciones públicas y identificar patrones empresariales">
+    <meta property="og:image" content="https://dashboard-licitaciones.vercel.app/assets/preview.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://dashboard-licitaciones.vercel.app/">
+    <meta property="twitter:title" content="Dashboard de Análisis de Licitaciones">
+    <meta property="twitter:description" content="Herramienta interactiva para analizar licitaciones públicas y identificar patrones empresariales">
+    <meta property="twitter:image" content="https://dashboard-licitaciones.vercel.app/assets/preview.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    <link rel="preload" href="municipios_coordenadas.json" as="fetch" crossorigin>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    
+    <!-- Leaflet.js CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+    
+    <!-- Leaflet.heat plugin CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js" defer></script>
+    
+    <!-- SheetJS CDN for Excel file reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header__title">Dashboard de Análisis de Proponentes en Licitaciones</h1>
+            <p class="header__subtitle">Análisis de participación y concentración geográfica de empresas</p>
+        </header>
+
+        <!-- Filters Section -->
+        <section class="filters">
+            <div class="filters__group">
+                <label for="file-input" class="filters__label">📁 Seleccionar archivo XLSX:</label>
+                <input type="file" id="file-input" accept=".xlsx,.xls" class="filters__file-input">
+                <button id="process-file" class="filters__button" disabled>Procesar Archivo</button>
+            </div>
+            
+            <div class="filters__group">
+                <label for="proceso-filter" class="filters__label">Filtrar por Proceso:</label>
+                <select id="proceso-filter" class="filters__select">
+                    <option value="">Todos los procesos</option>
+                </select>
+            </div>
+            
+            <div class="filters__group">
+                <label for="search-input" class="filters__label">Buscar Empresa o NIT:</label>
+                <input type="text" id="search-input" class="filters__input" 
+                       placeholder="Ingrese nombre de empresa o NIT">
+            </div>
+            
+            <div class="filters__group">
+                <button id="clear-filters" class="filters__button">Limpiar Filtros</button>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Column: KPIs and Chart -->
+            <aside class="left-column">
+                <!-- KPI Cards -->
+                <section class="kpi-section">
+                    <h2 class="section-title">Métricas Principales</h2>
+                    
+                    <div class="kpi-cards">
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon">📄</div>
+                            <div class="kpi-card__content">
+                                <h3 class="kpi-card__title">Total Procesos</h3>
+                                <p id="total-procesos" class="kpi-card__value">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon">👥</div>
+                            <div class="kpi-card__content">
+                                <h3 class="kpi-card__title">Total Proponentes</h3>
+                                <p id="total-proponentes" class="kpi-card__value">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-card__icon">🏢</div>
+                            <div class="kpi-card__content">
+                                <h3 class="kpi-card__title">Total Empresas</h3>
+                                <p id="total-empresas" class="kpi-card__value">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chart Section -->
+                <section class="chart-section">
+                    <h2 class="section-title">Top 5 Empresas más Frecuentes</h2>
+                    <div class="chart-container">
+                        <canvas id="proponentes-chart"></canvas>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Right Column: Map and Table -->
+            <section class="right-column">
+                <!-- Map Section -->
+                <div class="map-section">
+                    <h2 class="section-title">Mapa de Calor - Concentración Geográfica</h2>
+                    <div id="colombia-map" class="map-container"></div>
+                    <p class="map-legend">
+                        <span class="legend-item">🔴 Alta concentración</span>
+                        <span class="legend-item">🟡 Media concentración</span>
+                        <span class="legend-item">🔵 Baja concentración</span>
+                    </p>
+                </div>
+
+                <!-- Data Section -->
+                <div class="data-section">
+                    <h2 class="section-title">
+                        <span id="data-title">Datos de Licitaciones</span>
+                        <span id="data-count" class="data-count">(0 registros)</span>
+                    </h2>
+                    
+                    <div id="data-container" class="data-container">
+                        <!-- Dynamic content will be inserted here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="loading__spinner"></div>
+            <p class="loading__text">Cargando datos...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h3>⚠️ Error al cargar los datos</h3>
+            <p>Por favor, seleccione un archivo XLSX válido y haga clic en "Procesar Archivo".</p>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
