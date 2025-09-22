@@ -708,46 +708,13 @@ function updateHeatmap() {
     const foundMunicipios = [];
     const notFoundMunicipios = [];
     
-    // Calcular estadísticas para mejor distribución de intensidades
-    const counts = Object.values(municipioCount);
-    const maxCount = Math.max(...counts);
-    const minCount = Math.min(...counts);
-    const avgCount = counts.reduce((a, b) => a + b, 0) / counts.length;
-    
-    console.log(`Estadísticas: min=${minCount}, max=${maxCount}, avg=${avgCount.toFixed(1)}`);
-    console.log(`Rango de datos:`, counts.sort((a, b) => b - a));
-    
     Object.entries(municipioCount).forEach(([municipio, count]) => {
         const coords = municipiosCoords[municipio];
         if (coords) {
             foundMunicipios.push({municipio, count, coords});
-            
-            // Nueva estrategia: distribución por percentiles
-            let intensity;
-            if (maxCount === minCount) {
-                intensity = 0.8; // Si todos tienen la misma cantidad, usar alta intensidad
-            } else {
-                // Usar distribución por percentiles para mejor contraste visual
-                const sortedCounts = counts.sort((a, b) => b - a);
-                const percentile90 = sortedCounts[Math.floor(sortedCounts.length * 0.1)];
-                const percentile75 = sortedCounts[Math.floor(sortedCounts.length * 0.25)];
-                const percentile50 = sortedCounts[Math.floor(sortedCounts.length * 0.5)];
-                const percentile25 = sortedCounts[Math.floor(sortedCounts.length * 0.75)];
-                
-                if (count >= percentile90) {
-                    intensity = 1.0;        // Rojo - Top 10%
-                } else if (count >= percentile75) {
-                    intensity = 0.85;       // Naranja - Top 25%
-                } else if (count >= percentile50) {
-                    intensity = 0.65;       // Amarillo - Top 50%
-                } else if (count >= percentile25) {
-                    intensity = 0.45;       // Azul claro - Top 75%
-                } else {
-                    intensity = 0.25;       // Azul oscuro - Bottom 25%
-                }
-            }
-            
-            console.log(`${municipio}: count=${count}, intensity=${intensity.toFixed(3)}`);
+            // Intensidad basada en la cantidad (normalizada entre 0.3 y 1.0)
+            const maxCount = Math.max(...Object.values(municipioCount));
+            const intensity = 0.3 + (count / maxCount) * 0.7;
             heatPoints.push([coords[0], coords[1], intensity]);
         } else {
             notFoundMunicipios.push({municipio, count});
@@ -761,55 +728,57 @@ function updateHeatmap() {
         console.log('No encontrados:', notFoundMunicipios);
     }
     
-    // Crear capa de heatmap
-    if (heatPoints.length > 0) {
-        console.log(`Creando heatmap con ${heatPoints.length} puntos`);
-        console.log('Puntos del heatmap:', heatPoints);
-        
-        // Verificar el rango de intensidades
-        const intensities = heatPoints.map(p => p[2]);
-        const minIntensity = Math.min(...intensities);
-        const maxIntensity = Math.max(...intensities);
-        console.log(`Rango de intensidades: ${minIntensity.toFixed(3)} - ${maxIntensity.toFixed(3)}`);
-        
-        heatmapLayer = L.heatLayer(heatPoints, {
-            radius: 30,
-            blur: 10,
-            maxZoom: 18,
-            minOpacity: 0.6,
-            gradient: {
-                0.0: '#000080',   // Azul muy oscuro
-                0.2: '#0066CC',   // Azul
-                0.4: '#00CCFF',   // Cian
-                0.6: '#FFFF00',   // Amarillo
-                0.8: '#FF6600',   // Naranja
-                1.0: '#FF0000'    // Rojo
-            }
-        }).addTo(colombiaMap);
-        
-        console.log('Heatmap creado exitosamente');
-    } else {
-        console.log('No se creó heatmap - sin puntos válidos');
-    }
+    // Ya no creamos heatmap, solo círculos con colores
     
-    // Agregar marcadores para todos los municipios (no solo los que tienen 5+)
+    // Calcular umbrales para colores
+    const counts = Object.values(municipioCount);
+    const sortedCounts = counts.sort((a, b) => b - a);
+    const percentile90 = sortedCounts[Math.floor(sortedCounts.length * 0.1)] || Math.max(...counts);
+    const percentile75 = sortedCounts[Math.floor(sortedCounts.length * 0.25)] || Math.max(...counts);
+    const percentile50 = sortedCounts[Math.floor(sortedCounts.length * 0.5)] || (counts.reduce((a, b) => a + b, 0) / counts.length);
+    
+    // Agregar marcadores con colores según concentración
     foundMunicipios.forEach(({municipio, count, coords}) => {
+        // Determinar color según concentración
+        let color, fillColor, description;
+        
+        if (count >= percentile90) {
+            color = '#d73027';      // Rojo oscuro
+            fillColor = '#ff4444';  // Rojo
+            description = 'Alta concentración';
+        } else if (count >= percentile75) {
+            color = '#fd8d3c';      // Naranja oscuro
+            fillColor = '#ff9944';  // Naranja
+            description = 'Media-alta concentración';
+        } else if (count >= percentile50) {
+            color = '#fed976';      // Amarillo oscuro
+            fillColor = '#ffdd44';  // Amarillo
+            description = 'Media concentración';
+        } else {
+            color = '#2563eb';      // Azul oscuro
+            fillColor = '#3b82f6';  // Azul
+            description = 'Baja concentración';
+        }
+        
         const marker = L.circleMarker([coords[0], coords[1]], {
-            radius: Math.max(Math.min(count * 3, 25), 5), // Mínimo 5, máximo 25
-            color: '#2563eb',
-            fillColor: '#3b82f6',
-            fillOpacity: 0.7,
+            radius: Math.max(Math.min(count * 2 + 8, 25), 8),
+            color: color,
+            fillColor: fillColor,
+            fillOpacity: 0.8,
             weight: 2
         });
         
         marker.bindPopup(`
             <div style="font-family: system-ui; padding: 8px;">
                 <strong>${municipio}</strong><br>
-                ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}
+                ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}<br>
+                <span style="color: ${color}; font-weight: bold;">${description}</span>
             </div>
         `);
         
         marker.addTo(colombiaMap);
+        
+        console.log(`${municipio}: ${count} empresas - ${description} (${color})`);
     });
     
     console.log('Mapa actualizado correctamente');
