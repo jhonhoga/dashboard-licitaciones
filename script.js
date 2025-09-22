@@ -715,22 +715,36 @@ function updateHeatmap() {
     const avgCount = counts.reduce((a, b) => a + b, 0) / counts.length;
     
     console.log(`Estadísticas: min=${minCount}, max=${maxCount}, avg=${avgCount.toFixed(1)}`);
+    console.log(`Rango de datos:`, counts.sort((a, b) => b - a));
     
     Object.entries(municipioCount).forEach(([municipio, count]) => {
         const coords = municipiosCoords[municipio];
         if (coords) {
             foundMunicipios.push({municipio, count, coords});
             
-            // Intensidad mejorada con distribución logarítmica para mejor contraste
+            // Nueva estrategia: distribución por percentiles
             let intensity;
             if (maxCount === minCount) {
-                intensity = 0.5; // Si todos tienen la misma cantidad
+                intensity = 0.8; // Si todos tienen la misma cantidad, usar alta intensidad
             } else {
-                // Usar escala logarítmica para mejor distribución visual
-                const logCount = Math.log(count);
-                const logMax = Math.log(maxCount);
-                const logMin = Math.log(minCount);
-                intensity = 0.1 + ((logCount - logMin) / (logMax - logMin)) * 0.9;
+                // Usar distribución por percentiles para mejor contraste visual
+                const sortedCounts = counts.sort((a, b) => b - a);
+                const percentile90 = sortedCounts[Math.floor(sortedCounts.length * 0.1)];
+                const percentile75 = sortedCounts[Math.floor(sortedCounts.length * 0.25)];
+                const percentile50 = sortedCounts[Math.floor(sortedCounts.length * 0.5)];
+                const percentile25 = sortedCounts[Math.floor(sortedCounts.length * 0.75)];
+                
+                if (count >= percentile90) {
+                    intensity = 1.0;        // Rojo - Top 10%
+                } else if (count >= percentile75) {
+                    intensity = 0.85;       // Naranja - Top 25%
+                } else if (count >= percentile50) {
+                    intensity = 0.65;       // Amarillo - Top 50%
+                } else if (count >= percentile25) {
+                    intensity = 0.45;       // Azul claro - Top 75%
+                } else {
+                    intensity = 0.25;       // Azul oscuro - Bottom 25%
+                }
             }
             
             console.log(`${municipio}: count=${count}, intensity=${intensity.toFixed(3)}`);
@@ -752,20 +766,24 @@ function updateHeatmap() {
         console.log(`Creando heatmap con ${heatPoints.length} puntos`);
         console.log('Puntos del heatmap:', heatPoints);
         
+        // Verificar el rango de intensidades
+        const intensities = heatPoints.map(p => p[2]);
+        const minIntensity = Math.min(...intensities);
+        const maxIntensity = Math.max(...intensities);
+        console.log(`Rango de intensidades: ${minIntensity.toFixed(3)} - ${maxIntensity.toFixed(3)}`);
+        
         heatmapLayer = L.heatLayer(heatPoints, {
-            radius: 25,
-            blur: 15,
+            radius: 30,
+            blur: 10,
             maxZoom: 18,
-            minOpacity: 0.4,
+            minOpacity: 0.6,
             gradient: {
-                0.0: '#313695',  // Azul oscuro
-                0.2: '#4575b4',  // Azul
-                0.4: '#74add1',  // Azul claro
-                0.6: '#abd9e9',  // Azul muy claro
-                0.7: '#fee090',  // Amarillo claro
-                0.8: '#fdae61',  // Naranja claro
-                0.9: '#f46d43',  // Naranja
-                1.0: '#d73027'   // Rojo
+                0.0: '#000080',   // Azul muy oscuro
+                0.2: '#0066CC',   // Azul
+                0.4: '#00CCFF',   // Cian
+                0.6: '#FFFF00',   // Amarillo
+                0.8: '#FF6600',   // Naranja
+                1.0: '#FF0000'    // Rojo
             }
         }).addTo(colombiaMap);
         
