@@ -708,13 +708,32 @@ function updateHeatmap() {
     const foundMunicipios = [];
     const notFoundMunicipios = [];
     
+    // Calcular estadísticas para mejor distribución de intensidades
+    const counts = Object.values(municipioCount);
+    const maxCount = Math.max(...counts);
+    const minCount = Math.min(...counts);
+    const avgCount = counts.reduce((a, b) => a + b, 0) / counts.length;
+    
+    console.log(`Estadísticas: min=${minCount}, max=${maxCount}, avg=${avgCount.toFixed(1)}`);
+    
     Object.entries(municipioCount).forEach(([municipio, count]) => {
         const coords = municipiosCoords[municipio];
         if (coords) {
             foundMunicipios.push({municipio, count, coords});
-            // Intensidad basada en la cantidad (normalizada entre 0.3 y 1.0)
-            const maxCount = Math.max(...Object.values(municipioCount));
-            const intensity = 0.3 + (count / maxCount) * 0.7;
+            
+            // Intensidad mejorada con distribución logarítmica para mejor contraste
+            let intensity;
+            if (maxCount === minCount) {
+                intensity = 0.5; // Si todos tienen la misma cantidad
+            } else {
+                // Usar escala logarítmica para mejor distribución visual
+                const logCount = Math.log(count);
+                const logMax = Math.log(maxCount);
+                const logMin = Math.log(minCount);
+                intensity = 0.1 + ((logCount - logMin) / (logMax - logMin)) * 0.9;
+            }
+            
+            console.log(`${municipio}: count=${count}, intensity=${intensity.toFixed(3)}`);
             heatPoints.push([coords[0], coords[1], intensity]);
         } else {
             notFoundMunicipios.push({municipio, count});
@@ -731,18 +750,26 @@ function updateHeatmap() {
     // Crear capa de heatmap
     if (heatPoints.length > 0) {
         console.log(`Creando heatmap con ${heatPoints.length} puntos`);
+        console.log('Puntos del heatmap:', heatPoints);
+        
         heatmapLayer = L.heatLayer(heatPoints, {
-            radius: 30,
-            blur: 20,
-            maxZoom: 15,
+            radius: 25,
+            blur: 15,
+            maxZoom: 18,
+            minOpacity: 0.4,
             gradient: {
-                0.3: 'blue',
-                0.5: 'cyan',
-                0.7: 'lime',
-                0.85: 'yellow',
-                1.0: 'red'
+                0.0: '#313695',  // Azul oscuro
+                0.2: '#4575b4',  // Azul
+                0.4: '#74add1',  // Azul claro
+                0.6: '#abd9e9',  // Azul muy claro
+                0.7: '#fee090',  // Amarillo claro
+                0.8: '#fdae61',  // Naranja claro
+                0.9: '#f46d43',  // Naranja
+                1.0: '#d73027'   // Rojo
             }
         }).addTo(colombiaMap);
+        
+        console.log('Heatmap creado exitosamente');
     } else {
         console.log('No se creó heatmap - sin puntos válidos');
     }
