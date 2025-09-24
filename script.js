@@ -195,10 +195,20 @@ async function init() {
             // Santander
             "FLORIDABLANCA": [7.0625, -73.0861],
             "GIRON": [7.0800, -73.1194],
+            "GIRÓN": [7.0800, -73.1194],
             "BARRANCABERMEJA": [7.0647, -73.8547],
             "barrancabermeja": [7.0647, -73.8547],
+            "Barrancabermeja": [7.0647, -73.8547],
             "PUERTO BERRIO": [6.4347, -74.3731],
-            "SAN VICENTE DE CHUCURÍ": [7.0000, -73.5000]
+            "PUERTO BERRÍO": [6.4347, -74.3731],
+            "SAN VICENTE DE CHUCURÍ": [7.0000, -73.5000],
+            "SAN VICENTE DE CHUCURI": [7.0000, -73.5000],
+            
+            // Cajicá - municipio de Cundinamarca, no Antioquia
+            "CAJICÁ": [4.8572, -74.0525],
+            "CAJICA": [4.8572, -74.0525],
+            "cajicá": [4.8572, -74.0525],
+            "cajica": [4.8572, -74.0525]
 
         };
         
@@ -746,6 +756,20 @@ function updateHeatmap() {
     });
     
     console.log('Municipios encontrados:', municipioCount);
+    
+    // Debug: mostrar algunos municipios específicos
+    if (municipioCount['BARRANCABERMEJA']) {
+        console.log('✅ BARRANCABERMEJA encontrado:', municipioCount['BARRANCABERMEJA']);
+    }
+    if (municipioCount['CAJICÁ'] || municipioCount['CAJICA']) {
+        console.log('✅ CAJICÁ encontrado:', municipioCount['CAJICÁ'] || municipioCount['CAJICA']);
+    }
+    
+    // Mostrar municipios que NO tienen coordenadas
+    const municipiosSinCoordenadas = Object.keys(municipioCount).filter(m => !municipiosCoords[m]);
+    if (municipiosSinCoordenadas.length > 0) {
+        console.log('❌ Municipios sin coordenadas:', municipiosSinCoordenadas);
+    }
     
     // Crear puntos para el heatmap
     const heatPoints = [];
