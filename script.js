@@ -148,16 +148,14 @@ async function init() {
             "MOMPÓX": [9.2500, -74.2000],
             "MOMPOX": [9.2500, -74.2000],
             "TALAIGUA NUEVO": [9.5833, -74.8667],
-            "TALAIGUA NUEVO": [9.5833, -74.8667],
-
             
             // Cesar
             "AGUACHICA": [8.3111, -73.6178],
             "BOSCONIA": [10.0167, -73.8667],
             "LA JAGUA DE IBIRICO": [9.5500, -73.3167],
             "LA PAZ": [10.3852, -73.1719],
-            "PUEBLO BELLO": [8.9167, -73.9500],
-            
+            "PUEBLO BELLO": [10.4163, -73.5866],
+
 
             
             // Córdoba
@@ -198,6 +196,7 @@ async function init() {
             "FLORIDABLANCA": [7.0625, -73.0861],
             "GIRON": [7.0800, -73.1194],
             "BARRANCABERMEJA": [7.0647, -73.8547],
+            "barrancabermeja": [7.0647, -73.8547],
             "PUERTO BERRIO": [6.4347, -74.3731],
             "SAN VICENTE DE CHUCURÍ": [7.0000, -73.5000]
 
