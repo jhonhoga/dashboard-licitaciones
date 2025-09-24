@@ -124,8 +124,6 @@ async function init() {
             "COPACABANA": [6.3469, -75.5097],
             "GIRARDOTA": [6.3803, -75.4464],
             "RIONEGRO": [6.1556, -75.3736],
-            "CAJICÁ": [4.8572, -74.0525],
-            "CAJICA": [4.8572, -74.0525],
             
             // Atlántico
             "MALAMBO": [10.8597, -74.7739],
