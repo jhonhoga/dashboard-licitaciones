@@ -39,6 +39,7 @@ async function init() {
             "CALI": [3.4516, -76.5320],
             "BARRANQUILLA": [10.9685, -74.7813],
             "CARTAGENA": [10.3910, -75.4794],
+            "CARTAGENA DE INDIAS": [10.3910, -75.4794],
             "CUCUTA": [7.8939, -72.5078],
             "CÚCUTA": [7.8939, -72.5078],
             "BUCARAMANGA": [7.1193, -73.1227],
@@ -124,8 +125,6 @@ async function init() {
             "COPACABANA": [6.3469, -75.5097],
             "GIRARDOTA": [6.3803, -75.4464],
             "RIONEGRO": [6.1556, -75.3736],
-            "CAJICÁ": [4.8572, -74.0525],
-            "CAJICA": [4.8572, -74.0525],
             
             // Atlántico
             "MALAMBO": [10.8597, -74.7739],
