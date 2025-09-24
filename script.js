@@ -205,10 +205,10 @@ async function init() {
             "SAN VICENTE DE CHUCURI": [7.0000, -73.5000],
             
             // Cajicá - municipio de Cundinamarca, no Antioquia
-            "CAJICÁ": [4.8572, -74.0525],
-            "CAJICA": [4.8572, -74.0525],
-            "cajicá": [4.8572, -74.0525],
-            "cajica": [4.8572, -74.0525]
+            "CAJICÁ": [4.9166, -74.025],
+            "CAJICA": [4.9166, -74.025],
+            "cajicá": [4.9166, -74.025],
+            "cajica": [4.9166, -74.025]
 
         };
         
