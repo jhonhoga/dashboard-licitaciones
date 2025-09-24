@@ -286,6 +286,18 @@ body {
     gap: var(--spacing-sm);
 }
 
+.map-missing-info {
+    text-align: center;
+    margin-top: var(--spacing-xs);
+    font-size: 11px;
+    color: #94a3b8;
+    opacity: 0.8;
+}
+
+.map-missing-info small {
+    color: #64748b;
+}
+
 /* Data Section */
 .data-section {
     background: white;

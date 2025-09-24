@@ -23,6 +23,10 @@ const totalProcesosEl = document.getElementById('total-procesos');
 const totalProponentesEl = document.getElementById('total-proponentes');
 const totalEmpresasEl = document.getElementById('total-empresas');
 
+// Elementos del mapa
+const mapMissingCoordsEl = document.getElementById('map-missing-coords');
+const missingCoordsCountEl = document.getElementById('missing-coords-count');
+
 /**
  * Función principal que inicializa la aplicación
  */
@@ -795,6 +799,9 @@ function updateHeatmap() {
         console.log('No encontrados:', notFoundMunicipios);
     }
     
+    // Actualizar información de municipios sin coordenadas en el mapa
+    updateMissingCoordsInfo(notFoundMunicipios);
+    
     // Ya no creamos heatmap, solo círculos con colores
     
     // Calcular umbrales para colores
@@ -849,6 +856,32 @@ function updateHeatmap() {
     });
     
     console.log('Mapa actualizado correctamente');
+}
+
+/**
+ * Actualiza la información de municipios sin coordenadas en la UI
+ */
+function updateMissingCoordsInfo(notFoundMunicipios) {
+    if (!mapMissingCoordsEl || !missingCoordsCountEl) return;
+    
+    const count = notFoundMunicipios.length;
+    
+    if (count === 0) {
+        // Ocultar si no hay municipios sin coordenadas
+        mapMissingCoordsEl.style.display = 'none';
+    } else {
+        // Mostrar información con el conteo
+        missingCoordsCountEl.textContent = count;
+        mapMissingCoordsEl.style.display = 'block';
+        
+        // Opcional: agregar título con lista de municipios
+        if (count <= 5) {
+            const municipiosList = notFoundMunicipios.map(m => m.municipio).join(', ');
+            mapMissingCoordsEl.title = `Municipios sin coordenadas: ${municipiosList}`;
+        } else {
+            mapMissingCoordsEl.title = `${count} municipios sin coordenadas registradas`;
+        }
+    }
 }
 
 /**
