@@ -124,22 +124,41 @@ async function init() {
             "COPACABANA": [6.3469, -75.5097],
             "GIRARDOTA": [6.3803, -75.4464],
             "RIONEGRO": [6.1556, -75.3736],
+            "CAJICÁ": [4.8572, -74.0525],
+            "CAJICA": [4.8572, -74.0525],
             
             // Atlántico
             "MALAMBO": [10.8597, -74.7739],
             "GALAPA": [10.8992, -74.8839],
             "PUERTO COLOMBIA": [10.9889, -74.9544],
+            "PUERTO COLOMBIA": [10.9889, -74.9544],
+            "BARANOA": [10.8333, -74.9167],
+            "SABANAGRANDE": [10.7500, -74.7500],
+
             
             // Bolívar
             "MAGANGUE": [9.2417, -74.7556],
             "MAGANGUÉ": [9.2417, -74.7556],
             "TURBACO": [10.3389, -75.4275],
             "ARJONA": [10.2556, -75.3406],
+            "EL CARMEN DE BOLIVAR": [9.8667, -75.0333],
+            "EL CARMEN DE BOLÍVAR": [9.8667, -75.0333],
+            "MOMPOS": [9.2500, -74.2000],
+            "MOMPÓS": [9.2500, -74.2000],
+            "MOMPÓX": [9.2500, -74.2000],
+            "MOMPOX": [9.2500, -74.2000],
+            "TALAIGUA NUEVO": [9.5833, -74.8667],
+            "TALAIGUA NUEVO": [9.5833, -74.8667],
+
             
             // Cesar
             "AGUACHICA": [8.3111, -73.6178],
             "BOSCONIA": [10.0167, -73.8667],
             "LA JAGUA DE IBIRICO": [9.5500, -73.3167],
+            "LA PAZ": [10.3852, -73.1719],
+            "PUEBLO BELLO": [8.9167, -73.9500],
+            
+
             
             // Córdoba
             "CERETE": [8.8833, -75.7833],
@@ -147,15 +166,41 @@ async function init() {
             "LORICA": [9.2333, -75.8167],
             "SAHAGUN": [8.9500, -75.4500],
             "SAHAGÚN": [8.9500, -75.4500],
+            "MONTELIBANO": [7.9667, -75.4000],
+            "MONTELÍBANO": [7.9667, -75.4000],
+
             
             // La Guajira
             "MAICAO": [11.3833, -72.2500],
             "URIBIA": [11.7000, -72.2667],
+            "DIBULLA": [11.2333, -72.7167],
+            "DISTRACCION": [10.9667, -72.8667],
+            "DISTRACCIÓN": [10.9667, -72.8667],
+            "BARRANCAS": [11.5500, -72.9167],
+            "EL MOLINO": [10.9667, -73.2500],
+            "EL MOLINo": [10.9667, -73.2500],
+            "FONSECA": [10.7000, -72.9167],
+            "HATO NUEVO": [10.6333, -73.2500],
+            "HATO NUEVO": [10.6333, -73.2500],
+            "VILLANUEVA": [10.5833, -73.2500],
+            "VILLANUEVA": [10.5833, -73.2500],
+            "RIOHACHA": [11.5448, -72.9072],
             
             // Sucre
             "COROZAL": [9.3167, -75.3000],
             "SAMPUES": [9.1833, -75.3833],
-            "SAMPUÉS": [9.1833, -75.3833]
+            "SAMPUÉS": [9.1833, -75.3833],
+            "SAN ONOFRE": [9.1833, -75.3833],
+            "SUCRE": [9.1833, -75.3833],
+            "TAMALAMEQUE": [9.1833, -75.3833],
+
+            // Santander
+            "FLORIDABLANCA": [7.0625, -73.0861],
+            "GIRON": [7.0800, -73.1194],
+            "BARRANCABERMEJA": [7.0647, -73.8547],
+            "PUERTO BERRIO": [6.4347, -74.3731],
+            "SAN VICENTE DE CHUCURÍ": [7.0000, -73.5000]
+
         };
         
         // Inicializar mapa
