@@ -39,6 +39,7 @@ async function init() {
             "CALI": [3.4516, -76.5320],
             "BARRANQUILLA": [10.9685, -74.7813],
             "CARTAGENA": [10.3910, -75.4794],
+            "CARTAGENA DE INDIAS": [10.3910, -75.4794],
             "CUCUTA": [7.8939, -72.5078],
             "CÚCUTA": [7.8939, -72.5078],
             "BUCARAMANGA": [7.1193, -73.1227],
