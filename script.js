@@ -87,6 +87,10 @@ async function init() {
             "CHÍA": [4.8619, -74.0583],
             "ZIPAQUIRA": [5.0308, -74.0044],
             "ZIPAQUIRÁ": [5.0308, -74.0044],
+            "SOPO": [4.9080, -73.9402],
+            "SOPÓ": [4.9080, -73.9402],
+            "OCAÑA": [8.2461, -73.3552],
+
             
             // Departamento de Magdalena
             "PLATO": [9.7833, -74.7833],
@@ -211,7 +215,71 @@ async function init() {
             "CAJICÁ": [4.9166, -74.025],
             "CAJICA": [4.9166, -74.025],
             "cajicá": [4.9166, -74.025],
-            "cajica": [4.9166, -74.025]
+            "cajica": [4.9166, -74.025],
+            
+            // Nuevas ciudades del JSON - organizadas por departamentos
+            
+            // Huila
+            "PALERMO": [2.8917, -75.4375],
+            "PITALITO": [1.8989, -76.0419],
+            
+            // Antioquia adicionales
+            "TURBO": [8.1000, -76.7333],
+            "APARTADO": [7.8833, -76.6333],
+            "SABANALARGA": [6.8500, -75.8167],
+            
+            // Valle del Cauca adicionales  
+            "TULUA": [4.0833, -76.2000],
+            "TULUÁ": [4.0833, -76.2000],
+            "CARTAGO": [4.7000, -75.9167],
+            "GUADALAJARA DE BUGA": [3.9000, -76.3019],
+            "BUGA": [3.9000, -76.3019],
+            "JAMUNDI": [3.2667, -76.5500],
+            "JAMUNDÍ": [3.2667, -76.5500],
+            
+            // Nariño adicionales
+            "TUMACO": [1.8067, -78.7647],
+            "IPIALES": [0.8303, -77.6444],
+            
+            // Cundinamarca adicionales
+            "FONTIBON": [4.6786, -74.1411],
+            "FONTIBÓN": [4.6786, -74.1411],
+            "USME": [4.4464, -74.1522],
+            "FUSAGASUGA": [4.3452, -74.3618],
+            "FUSAGASUGÁ": [4.3452, -74.3618],
+            "GIRARDOT": [4.3050, -74.8017],
+            "DUITAMA": [5.8333, -73.0167],
+            
+            // Santander adicionales
+            "PIEDECUESTA": [7.0833, -73.0000],
+            
+            // Risaralda adicionales
+            "DOSQUEBRADAS": [4.8333, -75.6833],
+            "LA VIRGINIA": [4.9167, -75.8333],
+            
+            // Cauca adicionales
+            "SANTANDER DE QUILICHAO": [3.0167, -76.4833],
+            
+            // Boyacá adicionales
+            "SOGAMOSO": [5.7167, -72.9208],
+            
+            // Norte de Santander adicionales
+            "OCAÑA": [8.2333, -73.3500],
+            
+            // San Andrés y Providencia
+            "SAN ANDRES": [12.5847, -81.7006],
+            "SAN ANDRÉS": [12.5847, -81.7006],
+            
+            // Guaviare
+            "SAN JOSE DEL GUAVIARE": [2.5667, -72.6333],
+            "SAN JOSÉ DEL GUAVIARE": [2.5667, -72.6333],
+            
+            // Vaupés
+            "MITU": [1.1983, -70.1733],
+            "MITÚ": [1.1983, -70.1733],
+            
+            // Vichada
+            "PUERTO CARREÑO": [6.1903, -67.4836]
 
         };
         
