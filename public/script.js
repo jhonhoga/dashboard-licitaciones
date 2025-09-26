@@ -1528,12 +1528,71 @@ function updateHeatmap() {
         });
         
         marker.bindPopup(`
-            <div style="font-family: system-ui; padding: 8px;">
-                <strong>${municipio}</strong><br>
-                ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}<br>
-                <span style="color: ${color}; font-weight: bold;">${description}</span>
+            <div style="font-family: system-ui; padding: 12px; min-width: 200px;">
+                <div style="margin-bottom: 12px;">
+                    <strong style="font-size: 16px; color: #1f2937;">${municipio}</strong><br>
+                    <span style="font-size: 14px; color: #6b7280;">
+                        ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}
+                    </span><br>
+                    <span style="color: ${color}; font-weight: bold; font-size: 13px;">${description}</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button 
+                        onclick="filterByMunicipio('${municipio}')" 
+                        style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 500;
+                            flex: 1;
+                            transition: all 0.2s ease;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        "
+                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"
+                    >
+                        🔍 Filtrar
+                    </button>
+                    <button 
+                        onclick="clearAllFilters()" 
+                        style="
+                            background: #6b7280;
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        "
+                        onmouseover="this.style.background='#4b5563'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.background='#6b7280'; this.style.transform='translateY(0)';"
+                    >
+                        ↻ Limpiar
+                    </button>
+                </div>
             </div>
         `);
+        
+        // Hacer que el popup se mantenga abierto cuando se hace clic en los botones
+        marker.on('popupopen', function() {
+            // Prevenir que el popup se cierre cuando se hace clic en los botones
+            const popup = marker.getPopup();
+            const popupContent = popup.getContent();
+            
+            // Agregar evento para prevenir el cierre del popup al hacer clic en botones
+            marker.getPopup().getElement().addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    e.stopPropagation();
+                }
+            });
+        });
         
         marker.addTo(colombiaMap);
         
