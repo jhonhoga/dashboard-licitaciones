@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Popup Filters Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div style="padding: 20px; font-family: system-ui;">
+        <h1>🧪 Test: Popups del Mapa como Filtros</h1>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <div>
+                <h3>📋 Instrucciones de Prueba:</h3>
+                <ol style="line-height: 1.8;">
+                    <li><strong>Abrir Dashboard:</strong> <a href="https://dashboard-licitaciones.vercel.app/" target="_blank">https://dashboard-licitaciones.vercel.app/</a></li>
+                    <li><strong>Cargar archivo XLSX</strong> con datos de licitaciones</li>
+                    <li><strong>Ver el mapa</strong> con círculos de concentración por municipio</li>
+                    <li><strong>Hacer clic</strong> en cualquier círculo del mapa</li>
+                    <li><strong>Verificar popup</strong> con botones "🔍 Filtrar" y "↻ Limpiar"</li>
+                    <li><strong>Probar botón "Filtrar"</strong> - debe filtrar las licitaciones por ese municipio</li>
+                    <li><strong>Verificar notificación</strong> que aparece en la esquina superior derecha</li>
+                    <li><strong>Probar botón "Limpiar"</strong> - debe restaurar todos los datos</li>
+                </ol>
+            </div>
+            
+            <div>
+                <h3>✅ Funcionalidades Implementadas:</h3>
+                <ul style="line-height: 1.8;">
+                    <li>✅ <strong>Popups mejorados</strong> con mejor diseño y información detallada</li>
+                    <li>✅ <strong>Botón "Filtrar"</strong> en cada popup del mapa</li>
+                    <li>✅ <strong>Botón "Limpiar"</strong> para restaurar todos los datos</li>
+                    <li>✅ <strong>Función filterByMunicipio()</strong> - filtra datos por municipio</li>
+                    <li>✅ <strong>Función clearAllFilters()</strong> - limpia todos los filtros</li>
+                    <li>✅ <strong>Notificaciones elegantes</strong> cuando se aplica filtro</li>
+                    <li>✅ <strong>Actualización automática</strong> de KPIs, gráficos y mapa</li>
+                    <li>✅ <strong>Popups no se cierran</strong> al hacer clic en botones</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px;">
+            <h3 style="margin: 0 0 15px 0;">🎯 Casos de Uso:</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                <div>
+                    <strong>📍 Análisis Regional:</strong><br>
+                    Filtrar por municipio específico para ver todas las licitaciones de esa región
+                </div>
+                <div>
+                    <strong>🏢 Concentración Empresarial:</strong><br>
+                    Identificar qué municipios tienen mayor actividad licitatoria
+                </div>
+                <div>
+                    <strong>🔍 Investigación Focalizada:</strong><br>
+                    Estudiar patrones de contratación en municipios específicos
+                </div>
+                <div>
+                    <strong>📊 Comparación de Datos:</strong><br>
+                    Alternar entre vista completa y filtrada por municipio
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #10b981;">
+            <h4 style="margin: 0 0 10px 0; color: #059669;">💡 Características Técnicas:</h4>
+            <ul style="margin: 0; color: #374151;">
+                <li><strong>Integración completa:</strong> Los filtros del mapa se sincronizan con todos los componentes del dashboard</li>
+                <li><strong>UX optimizada:</strong> Notificaciones elegantes con animaciones y auto-cierre</li>
+                <li><strong>Responsive design:</strong> Popups y botones se adaptan a diferentes tamaños de pantalla</li>
+                <li><strong>Performance:</strong> Filtrado eficiente sin recargar el mapa completo</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Función para abrir el dashboard en nueva pestaña
+        function openDashboard() {
+            window.open('https://dashboard-licitaciones.vercel.app/', '_blank');
+        }
+        
+        // Auto-abrir el dashboard al cargar la página
+        setTimeout(openDashboard, 1000);
+    </script>
+</body>
+</html>

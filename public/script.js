@@ -1400,6 +1400,222 @@ function toggleLicitacion(header) {
 }
 
 /**
+ * Filtra los datos por un municipio específico seleccionado desde el mapa
+ * @param {string} municipio - Nombre del municipio a filtrar
+ */
+function filterByMunicipio(municipio) {
+    if (!rawData || rawData.length === 0) {
+        alert('No hay datos cargados para filtrar');
+        return;
+    }
+    
+    // Normalizar el nombre del municipio
+    const municipioNorm = municipio.toUpperCase().trim();
+    
+    // Filtrar los datos
+    filteredData = rawData.filter(row => {
+        for (let i = 1; i <= 4; i++) {
+            const municipioCol = getColumnValue(row, `MUNICIPIO ${i}`, `MUNICIPIO${i}`);
+            if (municipioCol && municipioCol.toUpperCase().trim() === municipioNorm) {
+                return true;
+            }
+        }
+        return false;
+    });
+    
+    console.log(`Filtro aplicado: ${municipio} - ${filteredData.length} registros encontrados`);
+    
+    // Actualizar todas las visualizaciones
+    updateKPIs();
+    updateChart();
+    updateDataDisplay();
+    updateHeatmap();
+    
+    // Mostrar notificación al usuario
+    showFilterNotification(municipio, filteredData.length);
+}
+
+/**
+ * Muestra una notificación temporal cuando se aplica un filtro por municipio
+ * @param {string} municipio - Nombre del municipio filtrado
+ * @param {number} count - Número de registros encontrados
+ */
+function showFilterNotification(municipio, count) {
+    // Crear elemento de notificación
+    const notification = document.createElement('div');
+    notification.className = 'filter-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">🗺️</span>
+            <span class="notification-text">
+                Filtrado por <strong>${municipio}</strong><br>
+                ${count} ${count === 1 ? 'registro encontrado' : 'registros encontrados'}
+            </span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                ×
+            </button>
+        </div>
+    `;
+    
+    // Agregar estilos inline para la notificación
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 10000;
+        min-width: 280px;
+        animation: slideIn 0.3s ease-out;
+        border: 1px solid rgba(255,255,255,0.2);
+    `;
+    
+    // Estilos para el contenido de la notificación
+    const content = notification.querySelector('.notification-content');
+    content.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+    `;
+    
+    // Estilos para el icono
+    const icon = notification.querySelector('.notification-icon');
+    icon.style.cssText = `
+        font-size: 24px;
+        flex-shrink: 0;
+    `;
+    
+    // Estilos para el texto
+    const text = notification.querySelector('.notification-text');
+    text.style.cssText = `
+        flex-grow: 1;
+        font-size: 14px;
+        line-height: 1.4;
+    `;
+    
+    // Estilos para el botón de cerrar
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.style.cssText = `
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        flex-shrink: 0;
+        transition: background-color 0.2s ease;
+    `;
+    
+    closeBtn.addEventListener('mouseover', () => {
+        closeBtn.style.backgroundColor = 'rgba(255,255,255,0.3)';
+    });
+    
+    closeBtn.addEventListener('mouseout', () => {
+        closeBtn.style.backgroundColor = 'rgba(255,255,255,0.2)';
+    });
+    
+    // Agregar animación CSS si no existe
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Agregar al DOM
+    document.body.appendChild(notification);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+/**
+ * Limpia todos los filtros aplicados
+ */
+function clearAllFilters() {
+    if (!rawData || rawData.length === 0) {
+        alert('No hay datos cargados');
+        return;
+    }
+    
+    filteredData = [...rawData];
+    
+    // Limpiar filtros de UI si existen
+    const processFilter = document.getElementById('process-filter');
+    if (processFilter) {
+        processFilter.value = '';
+    }
+    
+    // Actualizar todas las visualizaciones
+    updateKPIs();
+    updateChart();
+    updateDataDisplay();
+    updateHeatmap();
+    
+    // Mostrar notificación de limpieza
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-size: 14px;
+            animation: slideIn 0.3s ease-out;
+        ">
+            ✅ Todos los filtros han sido limpiados
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remover después de 3 segundos
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 3000);
+    
+    console.log('Todos los filtros han sido limpiados');
+}
+
+/**
  * Actualiza el mapa de calor
  */
 function updateHeatmap() {
