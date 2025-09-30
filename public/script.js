@@ -79,7 +79,8 @@ async function init() {
             "INÍRIDA": [3.8653, -67.9239],
             "SOACHA": [4.5928, -74.2172],
             "FUNZA": [4.7166, -74.2092],
-            "MOSQUERA": [4.7053, -74.2305],
+            "MOSQUERA": { coords: [4.7053, -74.2305], departamento: "CUNDINAMARCA" }, // Mosquera, Cundinamarca por defecto
+            "MOSQUERA CUNDINAMARCA": { coords: [4.7053, -74.2305], departamento: "CUNDINAMARCA" },
             "MADRID": [4.7297, -74.2658],
             "FACATATIVA": [4.8144, -74.3550],
             "FACATATIVÁ": [4.8144, -74.3550],
@@ -808,7 +809,7 @@ async function init() {
             "MAGUI PAYAN": [1.7500, -78.4000],
             "EL CHARCO": [2.4833, -78.1000],
             "LA TOLA": [2.6167, -78.4167],
-            "MOSQUERA": [1.8333, -78.4667], // Nariño
+            "MOSQUERA NARIÑO": { coords: [1.8333, -78.4667], departamento: "NARIÑO" }, // Mosquera, Nariño
             "OLAYA HERRERA": [2.3500, -78.4333],
             "FRANCISCO PIZARRO": [2.0500, -78.6500],
             "SANTA BÁRBARA": [1.2333, -77.7167],
@@ -1065,6 +1066,107 @@ function getColumnValue(row, ...possibleNames) {
         }
     }
     return '';
+}
+
+/**
+ * Busca las coordenadas de un municipio considerando también el departamento
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento (opcional)
+ * @returns {Array|null} - [latitud, longitud] o null si no se encuentra
+ */
+function getMunicipioCoords(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioNorm = municipio.toUpperCase().trim();
+    const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+    
+    // Buscar en el objeto de coordenadas
+    const coords = municipiosCoords[municipioNorm];
+    
+    if (!coords) return null;
+    
+    // Si las coordenadas tienen estructura nueva (con departamento)
+    if (coords.coords && coords.departamento) {
+        // Si se proporciona departamento, verificar que coincida
+        if (departamentoNorm && coords.departamento !== departamentoNorm) {
+            return null;
+        }
+        return coords.coords;
+    }
+    
+    // Si las coordenadas tienen estructura antigua (solo array)
+    if (Array.isArray(coords)) {
+        return coords;
+    }
+    
+    return null;
+}
+
+/**
+ * Obtiene información completa del municipio (coordenadas y departamento)
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento (opcional)
+ * @returns {Object|null} - {coords: [lat, lng], departamento: string} o null
+ */
+function getMunicipioInfo(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioNorm = municipio.toUpperCase().trim();
+    const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+    
+    const coords = municipiosCoords[municipioNorm];
+    
+    if (!coords) return null;
+    
+    // Si las coordenadas tienen estructura nueva
+    if (coords.coords && coords.departamento) {
+        // Si se proporciona departamento, verificar que coincida
+        if (departamentoNorm && coords.departamento !== departamentoNorm) {
+            return null;
+        }
+        return coords;
+    }
+    
+    // Si las coordenadas tienen estructura antigua, convertir
+    if (Array.isArray(coords)) {
+        return {
+            coords: coords,
+            departamento: departamentoNorm || "NO ESPECIFICADO"
+        };
+    }
+    
+    return null;
+}
+
+/**
+ * Busca municipio considerando múltiples variantes de nombres
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento
+ * @returns {Object|null} - Información del municipio o null
+ */
+function findMunicipioByVariants(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioBase = municipio.toUpperCase().trim();
+    
+    // Lista de variantes a probar
+    const variants = [
+        municipioBase,
+        municipioBase.replace(/Á/g, 'A').replace(/É/g, 'E').replace(/Í/g, 'I').replace(/Ó/g, 'O').replace(/Ú/g, 'U').replace(/Ñ/g, 'N'),
+        municipioBase.replace(/A/g, 'Á').replace(/E/g, 'É').replace(/I/g, 'Í').replace(/O/g, 'Ó').replace(/U/g, 'Ú'),
+        `${municipioBase} ${departamento || ''}`.trim(),
+        departamento ? `${municipioBase} ${departamento.toUpperCase()}` : municipioBase
+    ];
+    
+    // Probar cada variante
+    for (const variant of variants) {
+        const info = getMunicipioInfo(variant, departamento);
+        if (info) {
+            return info;
+        }
+    }
+    
+    return null;
 }
 
 /**
