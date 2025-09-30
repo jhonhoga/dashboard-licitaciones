@@ -79,8 +79,9 @@ async function init() {
             "INÍRIDA": [3.8653, -67.9239],
             "SOACHA": [4.5928, -74.2172],
             "FUNZA": [4.7166, -74.2092],
-            "MOSQUERA": [4.7053, -74.2305], // Mosquera, Cundinamarca - Coordenadas corregidas
-            "MOSQUERA": [1.8333, -78.4667],
+            "MOSQUERA": { coords: [4.7053, -74.2305], departamento: "CUNDINAMARCA" }, // Mosquera, Cundinamarca por defecto
+            "MOSQUERA CUNDINAMARCA": { coords: [4.7053, -74.2305], departamento: "CUNDINAMARCA" },
+            "MOSQUERA NARIÑO": { coords: [1.8333, -78.4667], departamento: "NARIÑO" },
             "MADRID": [4.7297, -74.2658],
             "FACATATIVA": [4.8144, -74.3550],
             "FACATATIVÁ": [4.8144, -74.3550],
@@ -1159,13 +1160,45 @@ function updateHeatmap() {
     
     console.log(`Analizando ${dataToAnalyze.length} registros para el mapa`);
     
+    // Debug: Mostrar las columnas disponibles en el primer registro
+    if (dataToAnalyze.length > 0) {
+        const sampleRow = dataToAnalyze[0];
+        const availableColumns = Object.keys(sampleRow);
+        console.log('📋 Columnas disponibles en el archivo:', availableColumns);
+        
+        // Buscar columnas de departamento
+        const deptoColumns = availableColumns.filter(col => 
+            col.toUpperCase().includes('DEPARTAMENTO') || 
+            col.toUpperCase().includes('DEPTO') || 
+            col.toUpperCase().includes('DEPT') || 
+            col.toUpperCase().includes('DPTO') ||
+            col.toUpperCase().includes('ESTADO') ||
+            col.toUpperCase().includes('REGION')
+        );
+        console.log('🏛️ Columnas de departamento encontradas:', deptoColumns);
+        
+        // Buscar columnas de municipio
+        const municipioColumns = availableColumns.filter(col => 
+            col.toUpperCase().includes('MUNICIPIO')
+        );
+        console.log('🏘️ Columnas de municipio encontradas:', municipioColumns);
+    }
+    
     const municipioCount = {};
     
     // Contar ocurrencias por municipio, considerando también departamento si está disponible
     dataToAnalyze.forEach(row => {
         for (let i = 1; i <= 4; i++) {
             const municipio = getColumnValue(row, `MUNICIPIO ${i}`, `MUNICIPIO${i}`);
-            const departamento = getColumnValue(row, `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, `DEPTO ${i}`, `DEPTO${i}`);
+            const departamento = getColumnValue(row, 
+                `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, 
+                `DEPTO ${i}`, `DEPTO${i}`,
+                `DEPT ${i}`, `DEPT${i}`,
+                `DPTO ${i}`, `DPTO${i}`,
+                `DEPARTMENT ${i}`, `DEPARTMENT${i}`,
+                `ESTADO ${i}`, `ESTADO${i}`,
+                `REGION ${i}`, `REGION${i}`
+            );
             
             if (municipio) {
                 const municipioNorm = municipio.toUpperCase().trim();
@@ -1526,7 +1559,15 @@ function filterByMunicipio(municipio, departamento = null) {
     filteredData = rawData.filter(row => {
         for (let i = 1; i <= 4; i++) {
             const municipioCol = getColumnValue(row, `MUNICIPIO ${i}`, `MUNICIPIO${i}`);
-            const departamentoCol = getColumnValue(row, `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, `DEPTO ${i}`, `DEPTO${i}`);
+            const departamentoCol = getColumnValue(row, 
+                `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, 
+                `DEPTO ${i}`, `DEPTO${i}`,
+                `DEPT ${i}`, `DEPT${i}`,
+                `DPTO ${i}`, `DPTO${i}`,
+                `DEPARTMENT ${i}`, `DEPARTMENT${i}`,
+                `ESTADO ${i}`, `ESTADO${i}`,
+                `REGION ${i}`, `REGION${i}`
+            );
             
             if (municipioCol && municipioCol.toUpperCase().trim() === municipioNorm) {
                 // Si se proporciona departamento, verificar que coincida también
