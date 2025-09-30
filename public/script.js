@@ -1782,16 +1782,66 @@ function updateHeatmap() {
     const foundMunicipios = [];
     const notFoundMunicipios = [];
     
-    Object.entries(municipioCount).forEach(([municipio, count]) => {
-        const coords = municipiosCoords[municipio];
-        if (coords) {
-            foundMunicipios.push({municipio, count, coords});
+    Object.entries(municipioCount).forEach(([municipioKey, count]) => {
+        // Intentar extraer municipio y departamento si están en formato "MUNICIPIO|DEPARTAMENTO"
+        let municipio = municipioKey;
+        let departamento = null;
+        
+        if (municipioKey.includes('|')) {
+            [municipio, departamento] = municipioKey.split('|');
+        }
+        
+        // Buscar coordenadas usando las nuevas funciones auxiliares
+        const municipioInfo = findMunicipioByVariants(municipio, departamento);
+        
+        if (municipioInfo && municipioInfo.coords) {
+            foundMunicipios.push({
+                municipio: municipio,
+                departamento: municipioInfo.departamento,
+                count: count, 
+                coords: municipioInfo.coords,
+                displayName: departamento ? `${municipio}, ${departamento}` : `${municipio}, ${municipioInfo.departamento}`
+            });
+            
             // Intensidad basada en la cantidad (normalizada entre 0.3 y 1.0)
             const maxCount = Math.max(...Object.values(municipioCount));
             const intensity = 0.3 + (count / maxCount) * 0.7;
-            heatPoints.push([coords[0], coords[1], intensity]);
+            heatPoints.push([municipioInfo.coords[0], municipioInfo.coords[1], intensity]);
         } else {
-            notFoundMunicipios.push({municipio, count});
+            // Fallback a la lógica antigua para compatibilidad
+            const coords = municipiosCoords[municipio];
+            if (coords) {
+                let coordsArray, deptName;
+                
+                // Manejar estructura nueva
+                if (coords.coords && coords.departamento) {
+                    coordsArray = coords.coords;
+                    deptName = coords.departamento;
+                } 
+                // Manejar estructura antigua
+                else if (Array.isArray(coords)) {
+                    coordsArray = coords;
+                    deptName = "NO ESPECIFICADO";
+                } 
+                else {
+                    notFoundMunicipios.push({municipio: municipio, departamento: departamento, count: count});
+                    return;
+                }
+                
+                foundMunicipios.push({
+                    municipio: municipio,
+                    departamento: deptName,
+                    count: count, 
+                    coords: coordsArray,
+                    displayName: `${municipio}, ${deptName}`
+                });
+                
+                const maxCount = Math.max(...Object.values(municipioCount));
+                const intensity = 0.3 + (count / maxCount) * 0.7;
+                heatPoints.push([coordsArray[0], coordsArray[1], intensity]);
+            } else {
+                notFoundMunicipios.push({municipio: municipio, departamento: departamento, count: count});
+            }
         }
     });
     
@@ -1815,7 +1865,7 @@ function updateHeatmap() {
     const percentile50 = sortedCounts[Math.floor(sortedCounts.length * 0.5)] || (counts.reduce((a, b) => a + b, 0) / counts.length);
     
     // Agregar marcadores con colores según concentración
-    foundMunicipios.forEach(({municipio, count, coords}) => {
+    foundMunicipios.forEach(({municipio, departamento, count, coords, displayName}) => {
         // Determinar color según concentración
         let color, fillColor, description;
         
@@ -1846,17 +1896,20 @@ function updateHeatmap() {
         });
         
         marker.bindPopup(`
-            <div style="font-family: system-ui; padding: 12px; min-width: 200px;">
+            <div style="font-family: system-ui; padding: 12px; min-width: 220px;">
                 <div style="margin-bottom: 12px;">
                     <strong style="font-size: 16px; color: #1f2937;">${municipio}</strong><br>
-                    <span style="font-size: 14px; color: #6b7280;">
+                    <span style="font-size: 13px; color: #6b7280; font-style: italic;">
+                        ${departamento || 'NO ESPECIFICADO'}
+                    </span><br>
+                    <span style="font-size: 14px; color: #6b7280; margin-top: 4px; display: block;">
                         ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}
                     </span><br>
                     <span style="color: ${color}; font-weight: bold; font-size: 13px;">${description}</span>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     <button 
-                        onclick="filterByMunicipio('${municipio}')" 
+                        onclick="filterByMunicipio('${municipio}', '${departamento || ''}')" 
                         style="
                             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                             color: white;
