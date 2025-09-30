@@ -79,7 +79,9 @@ async function init() {
             "INÍRIDA": [3.8653, -67.9239],
             "SOACHA": [4.5928, -74.2172],
             "FUNZA": [4.7166, -74.2092],
-            "MOSQUERA": [4.7053, -74.2305],
+            "MOSQUERA": [4.7053, -74.2305], // Mosquera, Cundinamarca - Coordenadas corregidas
+            "MOSQUERA CUNDINAMARCA": [4.7053, -74.2305],
+            "MOSQUERA NARIÑO": [1.8333, -78.4667],
             "MADRID": [4.7297, -74.2658],
             "FACATATIVA": [4.8144, -74.3550],
             "FACATATIVÁ": [4.8144, -74.3550],
