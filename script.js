@@ -32,7 +32,7 @@ const missingCoordsCountEl = document.getElementById('missing-coords-count');
  */
 async function init() {
     try {
-        // Usar coordenadas directamente en el código (sin fetch)
+        // Usar coordenadas directamente en el código con información de departamento
         municipiosCoords = {
             "BOGOTA D.C.": [4.6097, -74.0817],
             "BOGOTÁ D.C.": [4.6097, -74.0817],
@@ -80,8 +80,7 @@ async function init() {
             "SOACHA": [4.5928, -74.2172],
             "FUNZA": [4.7166, -74.2092],
             "MOSQUERA": [4.7053, -74.2305], // Mosquera, Cundinamarca - Coordenadas corregidas
-            "MOSQUERA CUNDINAMARCA": [4.7053, -74.2305],
-            "MOSQUERA NARIÑO": [1.8333, -78.4667],
+            "MOSQUERA": [1.8333, -78.4667],
             "MADRID": [4.7297, -74.2658],
             "FACATATIVA": [4.8144, -74.3550],
             "FACATATIVÁ": [4.8144, -74.3550],
@@ -697,6 +696,107 @@ function getColumnValue(row, ...possibleNames) {
 }
 
 /**
+ * Busca las coordenadas de un municipio considerando también el departamento
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento (opcional)
+ * @returns {Array|null} - [latitud, longitud] o null si no se encuentra
+ */
+function getMunicipioCoords(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioNorm = municipio.toUpperCase().trim();
+    const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+    
+    // Buscar en el objeto de coordenadas
+    const coords = municipiosCoords[municipioNorm];
+    
+    if (!coords) return null;
+    
+    // Si las coordenadas tienen estructura nueva (con departamento)
+    if (coords.coords && coords.departamento) {
+        // Si se proporciona departamento, verificar que coincida
+        if (departamentoNorm && coords.departamento !== departamentoNorm) {
+            return null;
+        }
+        return coords.coords;
+    }
+    
+    // Si las coordenadas tienen estructura antigua (solo array)
+    if (Array.isArray(coords)) {
+        return coords;
+    }
+    
+    return null;
+}
+
+/**
+ * Obtiene información completa del municipio (coordenadas y departamento)
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento (opcional)
+ * @returns {Object|null} - {coords: [lat, lng], departamento: string} o null
+ */
+function getMunicipioInfo(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioNorm = municipio.toUpperCase().trim();
+    const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+    
+    const coords = municipiosCoords[municipioNorm];
+    
+    if (!coords) return null;
+    
+    // Si las coordenadas tienen estructura nueva
+    if (coords.coords && coords.departamento) {
+        // Si se proporciona departamento, verificar que coincida
+        if (departamentoNorm && coords.departamento !== departamentoNorm) {
+            return null;
+        }
+        return coords;
+    }
+    
+    // Si las coordenadas tienen estructura antigua, convertir
+    if (Array.isArray(coords)) {
+        return {
+            coords: coords,
+            departamento: departamentoNorm || "NO ESPECIFICADO"
+        };
+    }
+    
+    return null;
+}
+
+/**
+ * Busca municipio considerando múltiples variantes de nombres
+ * @param {string} municipio - Nombre del municipio
+ * @param {string} departamento - Nombre del departamento
+ * @returns {Object|null} - Información del municipio o null
+ */
+function findMunicipioByVariants(municipio, departamento = null) {
+    if (!municipio) return null;
+    
+    const municipioBase = municipio.toUpperCase().trim();
+    
+    // Lista de variantes a probar
+    const variants = [
+        municipioBase,
+        municipioBase.replace(/Á/g, 'A').replace(/É/g, 'E').replace(/Í/g, 'I').replace(/Ó/g, 'O').replace(/Ú/g, 'U').replace(/Ñ/g, 'N'),
+        municipioBase.replace(/A/g, 'Á').replace(/E/g, 'É').replace(/I/g, 'Í').replace(/O/g, 'Ó').replace(/U/g, 'Ú'),
+        `${municipioBase} ${departamento || ''}`.trim(),
+        departamento ? `${municipioBase} ${departamento.toUpperCase()}` : municipioBase
+    ];
+    
+    // Probar cada variante
+    for (const variant of variants) {
+        const info = getMunicipioInfo(variant, departamento);
+        if (info) {
+            return info;
+        }
+    }
+    
+    return null;
+}
+
+/**
  * Formatea documentos de identidad (NITs y CCRPs) eliminando puntos pero conservando guiones
  */
 function formatDocument(document) {
@@ -1061,13 +1161,20 @@ function updateHeatmap() {
     
     const municipioCount = {};
     
-    // Contar ocurrencias por municipio
+    // Contar ocurrencias por municipio, considerando también departamento si está disponible
     dataToAnalyze.forEach(row => {
         for (let i = 1; i <= 4; i++) {
             const municipio = getColumnValue(row, `MUNICIPIO ${i}`, `MUNICIPIO${i}`);
+            const departamento = getColumnValue(row, `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, `DEPTO ${i}`, `DEPTO${i}`);
+            
             if (municipio) {
                 const municipioNorm = municipio.toUpperCase().trim();
-                municipioCount[municipioNorm] = (municipioCount[municipioNorm] || 0) + 1;
+                const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+                
+                // Crear clave única que incluya departamento si está disponible
+                const key = departamentoNorm ? `${municipioNorm}|${departamentoNorm}` : municipioNorm;
+                
+                municipioCount[key] = (municipioCount[key] || 0) + 1;
             }
         }
     });
@@ -1093,16 +1200,33 @@ function updateHeatmap() {
     const foundMunicipios = [];
     const notFoundMunicipios = [];
     
-    Object.entries(municipioCount).forEach(([municipio, count]) => {
-        const coords = municipiosCoords[municipio];
-        if (coords) {
-            foundMunicipios.push({municipio, count, coords});
+    Object.entries(municipioCount).forEach(([municipioKey, count]) => {
+        // Intentar extraer municipio y departamento si están en formato "MUNICIPIO|DEPARTAMENTO"
+        let municipio = municipioKey;
+        let departamento = null;
+        
+        if (municipioKey.includes('|')) {
+            [municipio, departamento] = municipioKey.split('|');
+        }
+        
+        // Buscar coordenadas usando las nuevas funciones auxiliares
+        const municipioInfo = findMunicipioByVariants(municipio, departamento);
+        
+        if (municipioInfo && municipioInfo.coords) {
+            foundMunicipios.push({
+                municipio: municipio,
+                departamento: municipioInfo.departamento,
+                count: count, 
+                coords: municipioInfo.coords,
+                displayName: departamento ? `${municipio}, ${departamento}` : `${municipio}, ${municipioInfo.departamento}`
+            });
+            
             // Intensidad basada en la cantidad (normalizada entre 0.3 y 1.0)
             const maxCount = Math.max(...Object.values(municipioCount));
             const intensity = 0.3 + (count / maxCount) * 0.7;
-            heatPoints.push([coords[0], coords[1], intensity]);
+            heatPoints.push([municipioInfo.coords[0], municipioInfo.coords[1], intensity]);
         } else {
-            notFoundMunicipios.push({municipio, count});
+            notFoundMunicipios.push({municipio: municipio, departamento: departamento, count: count});
         }
     });
     
@@ -1126,7 +1250,7 @@ function updateHeatmap() {
     const percentile50 = sortedCounts[Math.floor(sortedCounts.length * 0.5)] || (counts.reduce((a, b) => a + b, 0) / counts.length);
     
     // Agregar marcadores con colores según concentración
-    foundMunicipios.forEach(({municipio, count, coords}) => {
+    foundMunicipios.forEach(({municipio, departamento, count, coords, displayName}) => {
         // Determinar color según concentración
         let color, fillColor, description;
         
@@ -1157,16 +1281,73 @@ function updateHeatmap() {
         });
         
         marker.bindPopup(`
-            <div style="font-family: system-ui; padding: 8px;">
-                <strong>${municipio}</strong><br>
-                ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}<br>
-                <span style="color: ${color}; font-weight: bold;">${description}</span>
+            <div style="font-family: system-ui; padding: 12px; min-width: 220px;">
+                <div style="margin-bottom: 12px;">
+                    <strong style="font-size: 16px; color: #1f2937;">${municipio}</strong><br>
+                    <span style="font-size: 13px; color: #6b7280; font-style: italic;">
+                        ${departamento}
+                    </span><br>
+                    <span style="font-size: 14px; color: #6b7280; margin-top: 4px; display: block;">
+                        ${count} ${count === 1 ? 'empresa registrada' : 'empresas registradas'}
+                    </span><br>
+                    <span style="color: ${color}; font-weight: bold; font-size: 13px;">${description}</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button 
+                        onclick="filterByMunicipio('${municipio}', '${departamento}')" 
+                        style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 500;
+                            flex: 1;
+                            transition: all 0.2s ease;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        "
+                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"
+                    >
+                        🔍 Filtrar
+                    </button>
+                    <button 
+                        onclick="clearAllFilters()" 
+                        style="
+                            background: #6b7280;
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        "
+                        onmouseover="this.style.background='#4b5563'; this.style.transform='translateY(-1px)';"
+                        onmouseout="this.style.background='#6b7280'; this.style.transform='translateY(0)';"
+                    >
+                        ↻ Limpiar
+                    </button>
+                </div>
             </div>
         `);
         
+        // Hacer que el popup se mantenga abierto cuando se hace clic en los botones
+        marker.on('popupopen', function() {
+            marker.getPopup().getElement().addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    e.stopPropagation();
+                }
+            });
+        });
+        
         marker.addTo(colombiaMap);
         
-        console.log(`${municipio}: ${count} empresas - ${description} (${color})`);
+        console.log(`${displayName}: ${count} empresas - ${description} (${color})`);
     });
     
     console.log('Mapa actualizado correctamente');
@@ -1324,6 +1505,141 @@ function showError() {
  */
 function hideError() {
     errorElement.style.display = 'none';
+}
+
+/**
+ * Filtra los datos por un municipio específico seleccionado desde el mapa
+ * @param {string} municipio - Nombre del municipio a filtrar
+ * @param {string} departamento - Nombre del departamento (opcional)
+ */
+function filterByMunicipio(municipio, departamento = null) {
+    if (!rawData || rawData.length === 0) {
+        alert('No hay datos cargados para filtrar');
+        return;
+    }
+    
+    // Normalizar nombres
+    const municipioNorm = municipio.toUpperCase().trim();
+    const departamentoNorm = departamento ? departamento.toUpperCase().trim() : null;
+    
+    // Filtrar los datos
+    filteredData = rawData.filter(row => {
+        for (let i = 1; i <= 4; i++) {
+            const municipioCol = getColumnValue(row, `MUNICIPIO ${i}`, `MUNICIPIO${i}`);
+            const departamentoCol = getColumnValue(row, `DEPARTAMENTO ${i}`, `DEPARTAMENTO${i}`, `DEPTO ${i}`, `DEPTO${i}`);
+            
+            if (municipioCol && municipioCol.toUpperCase().trim() === municipioNorm) {
+                // Si se proporciona departamento, verificar que coincida también
+                if (departamentoNorm) {
+                    if (departamentoCol && departamentoCol.toUpperCase().trim() === departamentoNorm) {
+                        return true;
+                    }
+                } else {
+                    // Si no se proporciona departamento, solo filtrar por municipio
+                    return true;
+                }
+            }
+        }
+        return false;
+    });
+    
+    console.log(`Filtro aplicado: ${municipio}${departamento ? `, ${departamento}` : ''} - ${filteredData.length} registros encontrados`);
+    
+    // Actualizar todas las visualizaciones
+    updateAll();
+    
+    // Mostrar notificación al usuario
+    showFilterNotification(municipio, departamento, filteredData.length);
+}
+
+/**
+ * Muestra una notificación temporal cuando se aplica un filtro por municipio
+ * @param {string} municipio - Nombre del municipio filtrado
+ * @param {string} departamento - Nombre del departamento
+ * @param {number} count - Número de registros encontrados
+ */
+function showFilterNotification(municipio, departamento, count) {
+    // Crear elemento de notificación
+    const notification = document.createElement('div');
+    notification.className = 'filter-notification';
+    
+    const displayLocation = departamento ? `${municipio}, ${departamento}` : municipio;
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">🗺️</span>
+            <span class="notification-text">
+                Filtrado por <strong>${displayLocation}</strong><br>
+                ${count} ${count === 1 ? 'registro encontrado' : 'registros encontrados'}
+            </span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                ×
+            </button>
+        </div>
+    `;
+    
+    // Agregar estilos inline para la notificación
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 10000;
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+        border: 1px solid rgba(255,255,255,0.2);
+    `;
+    
+    // Estilos para el contenido de la notificación
+    const content = notification.querySelector('.notification-content');
+    content.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+    `;
+    
+    // Agregar al DOM
+    document.body.appendChild(notification);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+/**
+ * Limpia todos los filtros aplicados
+ */
+function clearAllFilters() {
+    if (!rawData || rawData.length === 0) {
+        alert('No hay datos cargados');
+        return;
+    }
+    
+    filteredData = [...rawData];
+    
+    // Limpiar filtros de UI si existen
+    if (procesosFilter) {
+        procesosFilter.value = '';
+    }
+    
+    // Actualizar todas las visualizaciones
+    updateAll();
+    
+    console.log('Todos los filtros han sido limpiados');
 }
 
 // Inicializar la aplicación cuando se carga el DOM
